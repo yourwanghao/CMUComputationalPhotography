@@ -5,6 +5,13 @@ using cv::Range;
 using std::list;
 using std::vector;
 
+int main(int argc, char **argv) {
+  testGetUnfilledNeighbors();
+  testFindMatches();
+  testGrowImg2();
+  return 0;
+}
+
 void stichImg(const Mat &imgSrc, const Mat &imgDst, const Mat &dstMask,
               Mat &outputImg) {
   int h = fmax(imgSrc.rows, imgDst.rows);
@@ -37,7 +44,7 @@ void stichImg(const Mat &imgSrc, const Mat &imgDst, const Mat &dstMask,
 }
 
 void testGrowImg() {
-  Mat imgSrc = cv::imread("./imgs/img3.png", cv::IMREAD_GRAYSCALE);
+  Mat imgSrc = cv::imread("./imgs/img2.png", cv::IMREAD_GRAYSCALE);
   Mat imgDst = imgSrc.clone();
   Mat dstMask = cv::Mat::ones(imgDst.size(), CV_8UC1);
   imgDst(cv::Range(50, 90), cv::Range(50, 90)) = 0;
@@ -56,10 +63,13 @@ void testGrowImg() {
 
 void testGrowImg2() {
   Mat imgSrc = cv::imread("./imgs/img3.png", cv::IMREAD_GRAYSCALE);
-  Mat imgDst;
-  cv::copyMakeBorder(imgSrc, imgDst, 15, 15, 15, 15, cv::BORDER_CONSTANT, 0);
-  Mat dstMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
-  cv::copyMakeBorder(dstMask, dstMask, 15, 15, 15, 15, cv::BORDER_CONSTANT, 0);
+  int h = imgSrc.rows;
+  int w = imgSrc.cols;
+
+  Mat imgDst=Mat::zeros(h*2, w*2, CV_8UC1);
+  imgSrc(Range(0,3), Range(0,3)).copyTo(imgDst(Range(0,3), Range(0,3)));
+  Mat dstMask = Mat::zeros(imgDst.size(), CV_8UC1);
+  dstMask(Range(0,3), Range(0,3))=1;
 
   const int windowR = 11;
   growImg(imgSrc, windowR, imgDst, dstMask);

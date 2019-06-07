@@ -58,13 +58,6 @@ using cv::Range;
 using std::list;
 using std::vector;
 
-int main(int argc, char **argv) {
-  testGetUnfilledNeighbors();
-  testFindMatches();
-  testGrowImg();
-  return 0;
-}
-
 void saveInternalImg(const Mat &imgDst, const Mat &dstMask, const int iter) {
       std::ostrstream dstMaskName;  // dynamic buffer
       dstMaskName << "./imgs/dstMask" << iter << ".jpg" << std::ends;
