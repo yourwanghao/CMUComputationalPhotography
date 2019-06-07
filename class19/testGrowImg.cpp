@@ -17,26 +17,26 @@ void stichImg(const Mat &imgSrc, const Mat &imgDst, const Mat &dstMask,
   int h = fmax(imgSrc.rows, imgDst.rows);
   int w = fmax(imgSrc.cols, imgDst.cols);
 
-  outputImg=Mat::zeros(h, 3 * w, imgSrc.type());
+  outputImg = Mat::zeros(h, 3 * w, imgSrc.type());
 
-  int imgSrcStartY = (h - imgSrc.rows) / 2;
-  int imgSrcEndY = (h + imgSrc.rows) / 2;
-  int imgSrcStartX = (w - imgSrc.cols) / 2;
-  int imgSrcEndX = (w + imgSrc.cols) / 2;
+  int imgSrcStartY = (h - imgSrc.rows) / 2.0f;
+  int imgSrcEndY = (h + imgSrc.rows) / 2.0f;
+  int imgSrcStartX = (w - imgSrc.cols) / 2.0f;
+  int imgSrcEndX = imgSrcStartX + imgSrc.cols;
   imgSrc.copyTo(outputImg(Range(imgSrcStartY, imgSrcEndY),
                           Range(imgSrcStartX, imgSrcEndX)));
 
-  int imgDstStartY = (h - imgDst.rows) / 2;
-  int imgDstEndY = (h + imgDst.rows) / 2;
-  int imgDstStartX = imgSrcEndX + (w - imgDst.cols) / 2;
-  int imgDstEndX = imgSrcEndX + (w + imgDst.cols) / 2;
+  int imgDstStartY = (h - imgDst.rows) / 2.0f;
+  int imgDstEndY = (h + imgDst.rows) / 2.0f;
+  int imgDstStartX = w + (w - imgDst.cols) / 2.0f;
+  int imgDstEndX = w + (w - imgDst.cols) / 2.0f + imgDst.cols;
   imgDst.copyTo(outputImg(Range(imgDstStartY, imgDstEndY),
                           Range(imgDstStartX, imgDstEndX)));
 
-  int dstMaskStartY = (h - dstMask.rows) / 2;
-  int dstMaskEndY = (h + dstMask.rows) / 2;
-  int dstMaskStartX = imgDstEndX + (w - dstMask.cols) / 2;
-  int dstMaskEndX = imgDstEndX + (w + dstMask.cols) / 2;
+  int dstMaskStartY = (h - dstMask.rows) / 2.0f;
+  int dstMaskEndY = (h + dstMask.rows) / 2.0f;
+  int dstMaskStartX = w * 2+ (w - dstMask.cols) / 2.0f;
+  int dstMaskEndX = w * 2 + (w - dstMask.cols) / 2.0f + dstMask.cols;
   Mat dstMaskShow = dstMask * 255;
 
   dstMaskShow.copyTo(outputImg(Range(dstMaskStartY, dstMaskEndY),
@@ -62,14 +62,18 @@ void testGrowImg() {
 }
 
 void testGrowImg2() {
-  Mat imgSrc = cv::imread("./imgs/img3.png", cv::IMREAD_GRAYSCALE);
+  Mat imgSrc = cv::imread("./imgs/img2.png", cv::IMREAD_GRAYSCALE);
   int h = imgSrc.rows;
   int w = imgSrc.cols;
 
-  Mat imgDst=Mat::zeros(h*2, w*2, CV_8UC1);
-  imgSrc(Range(0,3), Range(0,3)).copyTo(imgDst(Range(0,3), Range(0,3)));
+  Mat imgDst = Mat::zeros(h * 4, w * 4, CV_8UC1);
+  imgSrc(Range(imgSrc.rows / 2 - 1, imgSrc.rows / 2 + 2),
+         Range(imgSrc.cols / 2 - 1, imgSrc.cols / 2 + 2))
+      .copyTo(imgDst(Range(imgDst.rows / 2 - 1, imgDst.rows / 2 + 2),
+                     Range(imgDst.cols / 2 - 1, imgDst.cols / 2 + 2)));
   Mat dstMask = Mat::zeros(imgDst.size(), CV_8UC1);
-  dstMask(Range(0,3), Range(0,3))=1;
+  dstMask(Range(imgDst.rows / 2 - 1, imgDst.rows / 2 + 2),
+          Range(imgDst.cols / 2 - 1, imgDst.cols / 2 + 2)) = 1;
 
   const int windowR = 11;
   growImg(imgSrc, windowR, imgDst, dstMask);

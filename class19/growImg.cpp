@@ -47,6 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iterator>
 #include <random>
 #include <strstream>
+#include <omp.h>
 
 #include "Pixel.h"
 #include "common.h"
@@ -123,6 +124,7 @@ void growImg(const Mat &imgSrc, const int windowR, Mat &imgDst, Mat &dstMask) {
     }
 
     iter++;
+    // break;
   }
   printf("End of %s\n\r", __FUNCTION__);
   saveInternalImg(imgDst, dstMask, iter);
@@ -240,6 +242,8 @@ void findMatches(const Mat &imgSrc, const Mat &imgTemp, const Mat &maskTemp,
   Mat imgSSD = Mat::zeros(imgSrcB.size(), CV_32FC1);
   float minDist = 1e+9;
   float errThreshold = 0.1;
+
+  #pragma omp parallel for
   for (int i = windowR; i < imgSrcB.rows - windowR; i++) {
     float *imgSSDLine = imgSSD.ptr<float>(i);
     for (int j = windowR; j < imgSrcB.cols - windowR; j++) {
