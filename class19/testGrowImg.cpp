@@ -2,6 +2,7 @@
 
 using cv::Mat;
 using cv::Range;
+using cv::Point;
 using std::list;
 using std::vector;
 
@@ -133,12 +134,16 @@ void testGrowImg5() {
   int h = imgDst.rows;
   int w = imgDst.cols;
   Mat dstMask = Mat::zeros(imgDst.size(), CV_8UC1);
-  dstMask.setTo(1, imgDst!=0);
+  dstMask.setTo(1, imgDst>70);
+  erode(dstMask, dstMask, Mat(), Point(-1, -1), 1);
   Mat imgSrc = imgDst;
-  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
-  srcMask.setTo(1, imgSrc!=0);
+  Mat srcMask = cv::Mat::zeros(imgSrc.size(), CV_8UC1);
+  srcMask.setTo(1, imgSrc>70);
+  erode(srcMask, srcMask, Mat(), Point(-1, -1), 1);
+  Mat srcMaskSave = 255*srcMask;
+  cv::imwrite("./imgs/srcMask.jpg", srcMaskSave);
   
-  const int windowR = 11;
+  const int windowR = 15;
   growImg(imgSrc, srcMask, windowR, imgDst, dstMask);
   Mat imgOutput;
   stichImg(imgSrc, imgDst, dstMask, imgOutput);

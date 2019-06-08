@@ -219,9 +219,12 @@ cv::Mat getGaussianKernel(int rows, int cols, double sigmax, double sigmay) {
 void findMatches(const Mat &imgSrc, const Mat &srcMask, const Mat &imgTemp, const Mat &maskTemp,
                  const int windowR, vector<Pixel> &bestMatches) {
   // make border to prevent handling the edge
-  Mat imgSrcB;
+  Mat imgSrcB, srcMaskB;
   cv::copyMakeBorder(imgSrc, imgSrcB, windowR, windowR, windowR, windowR,
                      cv::BORDER_CONSTANT, 0);
+  cv::copyMakeBorder(srcMask, srcMaskB, windowR, windowR, windowR, windowR,
+                     cv::BORDER_CONSTANT, 0);
+                     
 
   assert((imgTemp.cols == 2 * windowR + 1) &&
          (imgTemp.rows == 2 * windowR + 1));
@@ -246,9 +249,9 @@ void findMatches(const Mat &imgSrc, const Mat &srcMask, const Mat &imgTemp, cons
   #pragma omp parallel for
   for (int i = windowR; i < imgSrcB.rows - windowR; i++) {
     float *imgSSDLine = imgSSD.ptr<float>(i);
-    const uchar *srcMaskLine = srcMask.ptr<uchar>(i-windowR);
+    const uchar *srcMaskBLine = srcMaskB.ptr<uchar>(i);
     for (int j = windowR; j < imgSrcB.cols - windowR; j++) {
-      if (srcMaskLine[j]==0) {
+      if (srcMaskBLine[j]==0) {
           continue;
       }
       const Mat roiSrc = imgSrcB(Range(i - windowR, i + windowR + 1),
@@ -270,6 +273,7 @@ void findMatches(const Mat &imgSrc, const Mat &srcMask, const Mat &imgTemp, cons
   }
   imgSSD = imgSSD(Range(windowR, imgSSD.rows - windowR),
                   Range(windowR, imgSSD.cols - windowR));
+  imgSSD.setTo(1e+9, srcMask==0);
 
   //   std::cout << "minDist=" << minDist << std::endl;
   double minV, maxV;
