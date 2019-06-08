@@ -79,7 +79,7 @@ void saveInternalImg(const Mat &imgDst, const Mat &dstMask, const int iter) {
  * @param imgDst
  * @param dstMask
  */
-void growImg(const Mat &imgSrc, const int windowR, Mat &imgDst, Mat &dstMask) {
+void growImg(const Mat &imgSrc, const Mat &srcMask, const int windowR, Mat &imgDst, Mat &dstMask) {
   float MaxErrThreshold = 0.3;
   int iter = 0;
   int totalPixelCount = dstMask.rows * dstMask.cols;
@@ -104,7 +104,7 @@ void growImg(const Mat &imgSrc, const int windowR, Mat &imgDst, Mat &dstMask) {
       Mat maskTemp;
       getNeighbourhoodWindow(pixel, imgDst, dstMask, windowR, temImg, maskTemp);
       vector<Pixel> bestMatches;
-      findMatches(imgSrc, temImg, maskTemp, windowR, bestMatches);
+      findMatches(imgSrc, srcMask, temImg, maskTemp, windowR, bestMatches);
 
       //   printf("%d/%d, bestMatches(%d)\n", count, pixelList.size(),
       //          bestMatches.size());
@@ -216,7 +216,7 @@ cv::Mat getGaussianKernel(int rows, int cols, double sigmax, double sigmay) {
  * @param maskTemp
  * @param bestMatches
  */
-void findMatches(const Mat &imgSrc, const Mat &imgTemp, const Mat &maskTemp,
+void findMatches(const Mat &imgSrc, const Mat &srcMask, const Mat &imgTemp, const Mat &maskTemp,
                  const int windowR, vector<Pixel> &bestMatches) {
   // make border to prevent handling the edge
   Mat imgSrcB;
@@ -246,7 +246,11 @@ void findMatches(const Mat &imgSrc, const Mat &imgTemp, const Mat &maskTemp,
   #pragma omp parallel for
   for (int i = windowR; i < imgSrcB.rows - windowR; i++) {
     float *imgSSDLine = imgSSD.ptr<float>(i);
+    const uchar *srcMaskLine = srcMask.ptr<uchar>(i-windowR);
     for (int j = windowR; j < imgSrcB.cols - windowR; j++) {
+      if (srcMaskLine[j]==0) {
+          continue;
+      }
       const Mat roiSrc = imgSrcB(Range(i - windowR, i + windowR + 1),
                                  Range(j - windowR, j + windowR + 1));
       assert(roiSrc.size() == imgTemp.size());

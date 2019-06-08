@@ -8,7 +8,7 @@ using std::vector;
 int main(int argc, char **argv) {
   testGetUnfilledNeighbors();
   testFindMatches();
-  testGrowImg2();
+  testGrowImg5();
   return 0;
 }
 
@@ -47,11 +47,12 @@ void testGrowImg() {
   Mat imgSrc = cv::imread("./imgs/img2.png", cv::IMREAD_GRAYSCALE);
   Mat imgDst = imgSrc.clone();
   Mat dstMask = cv::Mat::ones(imgDst.size(), CV_8UC1);
+  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
   imgDst(cv::Range(50, 90), cv::Range(50, 90)) = 0;
   dstMask(cv::Range(50, 90), cv::Range(50, 90)) = 0;
 
   const int windowR = 11;
-  growImg(imgSrc, windowR, imgDst, dstMask);
+  growImg(imgSrc, srcMask, windowR, imgDst, dstMask);
   Mat imgOutput;
   stichImg(imgSrc, imgDst, dstMask, imgOutput);
 
@@ -63,6 +64,7 @@ void testGrowImg() {
 
 void testGrowImg2() {
   Mat imgSrc = cv::imread("./imgs/img2.png", cv::IMREAD_GRAYSCALE);
+  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
   int h = imgSrc.rows;
   int w = imgSrc.cols;
 
@@ -76,7 +78,68 @@ void testGrowImg2() {
           Range(imgDst.cols / 2 - 1, imgDst.cols / 2 + 2)) = 1;
 
   const int windowR = 11;
-  growImg(imgSrc, windowR, imgDst, dstMask);
+  growImg(imgSrc, srcMask, windowR, imgDst, dstMask);
+  Mat imgOutput;
+  stichImg(imgSrc, imgDst, dstMask, imgOutput);
+
+  cv::imshow("stitch img", imgOutput);
+  cv::waitKey(0);
+
+  cv::imwrite("./imgs/imgOutput.jpg", imgOutput);
+}
+
+void testGrowImg3() {
+  Mat imgDst = cv::imread("./imgs/img4.jpg", cv::IMREAD_GRAYSCALE);
+  int h = imgDst.rows;
+  int w = imgDst.cols;
+  Mat dstMask = Mat::zeros(imgDst.size(), CV_8UC1);
+  dstMask(Range(40, h-40), Range(40, w-40))=1;
+  Mat imgSrc = imgDst(Range(40,h-40), Range(40, w-40));
+  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
+  
+  const int windowR = 11;
+  growImg(imgSrc, srcMask, windowR, imgDst, dstMask);
+  Mat imgOutput;
+  stichImg(imgSrc, imgDst, dstMask, imgOutput);
+
+  cv::imshow("stitch img", imgOutput);
+  cv::waitKey(0);
+
+  cv::imwrite("./imgs/imgOutput.jpg", imgOutput);
+}
+
+void testGrowImg4() {
+  Mat imgDst = cv::imread("./imgs/img5.jpg", cv::IMREAD_GRAYSCALE);
+  int h = imgDst.rows;
+  int w = imgDst.cols;
+  Mat dstMask = Mat::zeros(imgDst.size(), CV_8UC1);
+  dstMask(Range(15, h-15), Range(15, w-15))=1;
+  Mat imgSrc = imgDst(Range(15,h-15), Range(15, w-15));
+  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
+  
+  const int windowR = 11;
+  growImg(imgSrc, srcMask, windowR, imgDst, dstMask);
+  Mat imgOutput;
+  stichImg(imgSrc, imgDst, dstMask, imgOutput);
+
+  cv::imshow("stitch img", imgOutput);
+  cv::waitKey(0);
+
+  cv::imwrite("./imgs/imgOutput.jpg", imgOutput);
+}
+
+void testGrowImg5() {
+  Mat imgDst = cv::imread("./imgs/img6.png", cv::IMREAD_GRAYSCALE);
+  int h = imgDst.rows;
+  int w = imgDst.cols;
+  Mat dstMask = Mat::zeros(imgDst.size(), CV_8UC1);
+  dstMask.setTo(1, imgDst!=0);
+  Mat imgSrc = imgDst;
+  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
+  srcMask.setTo(1, imgSrc!=0);
+  
+  const int windowR = 11;
+  growImg(imgSrc, srcMask, windowR, imgDst, dstMask);
   Mat imgOutput;
   stichImg(imgSrc, imgDst, dstMask, imgOutput);
 
@@ -111,6 +174,7 @@ void testGetUnfilledNeighbors() {
 void testFindMatches() {
   Mat imgSrc = Mat::zeros(51, 51, CV_8UC1);
   imgSrc(Range(0, 11), Range(0, 11)) = 255;
+  Mat srcMask = cv::Mat::ones(imgSrc.size(), CV_8UC1);
 
   Mat imgTemp = Mat::ones(11, 11, CV_8UC1) * 255;
   Mat maskTemp = Mat::ones(11, 11, CV_8UC1);
@@ -118,7 +182,7 @@ void testFindMatches() {
 
   vector<Pixel> bestMatches;
 
-  findMatches(imgSrc, imgTemp, maskTemp, 5, bestMatches);
+  findMatches(imgSrc, srcMask, imgTemp, maskTemp, 5, bestMatches);
 
   bool ret = false;
   for (Pixel p : bestMatches) {
